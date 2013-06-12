@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ContextClient" default="jar">
+  <property file="run.properties"/>
+  <property file="build.properties"/>
+  <property file="default.properties"/>
+
+  <property name="context.common" value="../ContextCommon"/>
+  <property name="context.common.src.dir" value="${context.common}/src"/>
+  <property name="context.common.bin.dir" value="${context.common}/bin"/>
+
+  <property name="bin.dir" value="bin"/>
+  <property name="src.dir" value="src"/>
+  <property name="demo.bin.dir" value="demo-bin"/>
+  <property name="demo.src.dir" value="demo"/>
+  <property name="jar.file" value="${ant.project.name}.jar"/>
+  <property name="jar-src.file" value="${ant.project.name}-src.jar"/>
+  <property name="clientui.jar.file" value="ClientUI.jar"/>
+  <property name="main.class" value="org.tzi.context.ClientUI"/>
+
+  <propertyset id="sysprops">
+    <propertyref prefix="org.tzi."/>
+  </propertyset>
+
+  <target name="common-classes">
+    <ant dir="${context.common}" inheritAll="false" target="compile"/>
+  </target>
+  
+  <target name="compile" depends="common-classes">
+          <mkdir dir="${bin.dir}"/>
+    <javac includeantruntime="false" srcdir="${src.dir}" destdir="${bin.dir}">
+      <classpath>
+        <pathelement path="${context.common.bin.dir}"/>
+      </classpath>
+    </javac>
+  </target>
+  
+  <target name="demo-classes" depends="compile">
+          <mkdir dir="${demo.bin.dir}"/>
+    <javac includeantruntime="false" srcdir="${demo.src.dir}" destdir="${demo.bin.dir}">
+      <classpath>
+        <pathelement path="${context.common.bin.dir}"/>
+        <pathelement path="${bin.dir}"/>
+      </classpath>
+    </javac>
+  </target>
+  
+  <target name="jar" depends="compile">
+    <jar destfile="${jar.file}">
+      <fileset dir="${bin.dir}"/>
+      <fileset dir="${context.common.bin.dir}"/>
+    </jar>
+  </target>
+  
+  <target name="jar-src" depends="compile">
+    <jar destfile="${jar-src.file}">
+      <fileset dir="${bin.dir}"/>
+      <fileset dir="${src.dir}"/>
+      <fileset dir="${context.common.bin.dir}"/>
+      <fileset dir="${context.common.src.dir}"/>
+    </jar>
+  </target>
+  
+  <target name="clientui" depends="demo-classes">
+    <jar destfile="${clientui.jar.file}">
+      <manifest>
+        <attribute name="Main-Class" value="${main.class}"/>
+      </manifest>
+      <fileset dir="${bin.dir}"/>
+      <fileset dir="${demo.bin.dir}"/>
+      <fileset dir="${context.common.bin.dir}"/>
+    </jar>
+  </target>
+  
+  <target name="run" depends="clientui">
+    <java classname="${main.class}" fork="true">
+      <classpath>
+        <pathelement location="${clientui.jar.file}"/>
+      </classpath>
+      <syspropertyset refid="sysprops"/>
+    </java>
+  </target>
+  
+  <target name="clean">
+    <delete file="${jar.file}"/>
+    <delete file="${clientui.jar.file}"/>
+    <delete dir="${bin.dir}"/>
+    <delete dir="${demo.bin.dir}"/>
+  </target>
+
+</project>
